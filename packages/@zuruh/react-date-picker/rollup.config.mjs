@@ -5,7 +5,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
-import postcss from 'rollup-plugin-postcss';
 import dts from 'rollup-plugin-dts';
 
 export default defineConfig([
@@ -27,7 +26,6 @@ export default defineConfig([
       resolve(),
       commonjs(),
       typescript({ tsconfig: './tsconfig.json' }),
-      postcss(),
       terser(),
     ],
     external: [...Object.keys(config.peerDependencies)],
