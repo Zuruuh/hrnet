@@ -1,3 +1,3 @@
 # React date picker
 
-A headless date-picker library
+A headless date-picker library for React
