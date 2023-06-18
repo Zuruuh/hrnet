@@ -5,9 +5,9 @@ import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import tsConfigPaths from 'vite-tsconfig-paths';
 
-export default defineConfig({
+export default defineConfig((env) => ({
   plugins: [
-    react({ jsxRuntime: 'classic' }),
+    react({ jsxRuntime: env.command === 'build' ? 'classic' : 'automatic' }),
     dts({ insertTypesEntry: true }),
     tsConfigPaths(),
   ],
@@ -31,4 +31,4 @@ export default defineConfig({
     environment: 'jsdom',
     silent: false,
   },
-});
+}));
