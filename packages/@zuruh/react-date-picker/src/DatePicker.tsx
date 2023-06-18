@@ -1,6 +1,5 @@
 import { forwardRef, useState, type ReactNode } from 'react';
 import { DatePickerContext } from './context/DatePickerContext';
-import { Calendar } from './components/Calendar';
 
 export interface DatePickerProps {
   open: boolean;
@@ -8,8 +7,8 @@ export interface DatePickerProps {
 }
 
 export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
-  function DatePicker({ children }, ref): ReactNode {
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  function DatePicker({ children }, ref) {
+    const [selectedDate] = useState<Date | null>(null);
 
     return (
       <DatePickerContext.Provider value={{ selectedDate }}>
@@ -21,4 +20,4 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
   }
 );
 
-DatePicker.Calendar = Calendar;
+// DatePicker.Calendar = Calendar;
