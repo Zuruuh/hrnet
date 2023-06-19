@@ -10,7 +10,9 @@ export const World: Story = () => {
   return (
     <DatePicker.Root setSelectedDate={setDate} selectedDate={date}>
       <DatePicker.Calendar>
-        <DatePicker.Days>
+        <DatePicker.Days
+          style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}
+        >
           {(props) => <div onClick={props.onClick}>{props.date.date()}</div>}
         </DatePicker.Days>
       </DatePicker.Calendar>

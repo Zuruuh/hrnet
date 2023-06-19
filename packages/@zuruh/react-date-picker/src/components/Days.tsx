@@ -1,5 +1,6 @@
 import { type ReactNode, forwardRef, useCallback, useMemo } from 'react';
 import { useDatePickerContext } from '../hooks/useDatePickerContext';
+import type { DivPropsWithoutRef } from 'react-html-props';
 import day, { type Dayjs } from 'dayjs';
 
 export interface DaysInnerProps {
@@ -10,7 +11,7 @@ export interface DaysInnerProps {
   date: Dayjs;
 }
 
-export interface DaysProps {
+export interface DaysProps extends Omit<DivPropsWithoutRef, 'children'> {
   children: (props: DaysInnerProps) => ReactNode;
 }
 
@@ -18,7 +19,7 @@ const MONDAY = 1;
 const DAYS_COUNT_IN_A_WEEK = 6; // range from 0 to 6 where 0 is Sunday and 6 is Saturday
 
 export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
-  { children },
+  { children, ...rest },
   ref
 ) {
   const {
@@ -32,6 +33,16 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
       setSelectedDate(date);
     },
     [setSelectedDate]
+  );
+  const generateDefaultProps = useCallback(
+    (date: Dayjs) =>
+      ({
+        date,
+        onClick: () => onClick(date),
+        isCurrentDate: date.isSame(day(), 'date'),
+        isSelectionnedDate: date.isSame(selectedDate, 'date'),
+      } satisfies Partial<DaysInnerProps>),
+    [onClick, selectedDate]
   );
 
   const month = useMemo(
@@ -51,22 +62,16 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
       const date = monthBefore.subtract(i, 'days');
 
       days.unshift({
-        date,
+        ...generateDefaultProps(date),
         belongsToSelectedMonth: false,
-        onClick: () => console.log(date.toString()),
-        isCurrentDate: date.isSame(day(), 'date'),
-        isSelectionnedDate: date.isSame(selectedDate, 'date'),
       });
     }
 
     for (let i = 1; i <= month.daysInMonth(); i++) {
       const date = month.set('date', i);
       days.push({
-        date,
+        ...generateDefaultProps(date),
         belongsToSelectedMonth: true,
-        onClick: () => console.log(date.toString()),
-        isCurrentDate: date.isSame(day(), 'date'),
-        isSelectionnedDate: date.isSame(selectedDate, 'date'),
       });
     }
 
@@ -77,17 +82,14 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
       const date = monthAfter.add(i, 'days');
 
       days.push({
-        date,
+        ...generateDefaultProps(date),
         belongsToSelectedMonth: false,
-        onClick: () => console.log(date.toString()),
-        isCurrentDate: date.isSame(day(), 'date'),
-        isSelectionnedDate: date.isSame(selectedDate, 'date'),
       });
     }
 
     return days.reduce(
       (prev: DaysInnerProps[][], curr, index): DaysInnerProps[][] => {
-        if (index % 7 === 0 && index > 0) {
+        if (index % (DAYS_COUNT_IN_A_WEEK + 1) === 0 && index > 0) {
           return [...prev, [curr]];
         }
 
@@ -96,13 +98,10 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
       },
       [[]]
     );
-  }, [month, selectedDate]);
+  }, [month, generateDefaultProps]);
 
   return (
-    <div
-      ref={ref}
-      style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}
-    >
+    <div ref={ref} {...rest}>
       {calendar.map((entries) => (
         <div
           style={{ display: 'flex', gap: '5px' }}
