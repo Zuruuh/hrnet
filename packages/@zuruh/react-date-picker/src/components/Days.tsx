@@ -15,7 +15,7 @@ export interface DaysProps {
 }
 
 const MONDAY = 1;
-const DAYS_COUNT_IN_A_WEEK = 7;
+const DAYS_COUNT_IN_A_WEEK = 6; // range from 0 to 6 where 0 is Sunday and 6 is Saturday
 
 export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
   { children },
@@ -42,7 +42,7 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
         .set('year', temporarySelectedYear),
     [temporarySelectedYear, temporarySelectedMonth]
   );
-  const calendar: DaysInnerProps[] = useMemo(() => {
+  const calendar: DaysInnerProps[][] = useMemo(() => {
     const days: DaysInnerProps[] = [];
     const countOfDaysBeforeMonthStart = -(MONDAY - month.day());
     const monthBefore = month.subtract(1, 'month').endOf('month');
@@ -71,7 +71,7 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
     }
 
     const countOfDaysAfterMonthEnd = DAYS_COUNT_IN_A_WEEK - month.day();
-    const monthAfter = month.add(1, 'month').startOf('month');
+    const monthAfter = month.add(1, 'month');
 
     for (let i = 0; i < countOfDaysAfterMonthEnd; i++) {
       const date = monthAfter.add(i, 'days');
@@ -85,24 +85,39 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
       });
     }
 
-    return days;
+    return days.reduce(
+      (prev: DaysInnerProps[][], curr, index): DaysInnerProps[][] => {
+        if (index % 7 === 0 && index > 0) {
+          return [...prev, [curr]];
+        }
+
+        prev.at(-1)!.push(curr);
+        return prev;
+      },
+      [[]]
+    );
   }, [month, selectedDate]);
-  console.log(calendar);
 
   return (
-    <div ref={ref} style={{ display: 'flex', gap: '5px' }}>
-      {calendar.map((entry) => (
+    <div
+      ref={ref}
+      style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}
+    >
+      {calendar.map((entries) => (
         <div
-          key={`date-picker-day-${entry.isSelectionnedDate}-${
-            entry.isCurrentDate
-          }-${entry.date.date()}-${entry.date.month()}-${
-            entry.belongsToSelectedMonth
-          }`}
-          style={{
-            color: `${entry.belongsToSelectedMonth ? 'black' : 'gray'}`,
-          }}
+          style={{ display: 'flex', gap: '5px' }}
+          key={JSON.stringify(entries)}
         >
-          {children(entry)}
+          {entries.map((entry) => (
+            <div
+              key={JSON.stringify(entry)}
+              style={{
+                color: `${entry.belongsToSelectedMonth ? 'black' : 'gray'}`,
+              }}
+            >
+              {children(entry)}
+            </div>
+          ))}
         </div>
       ))}
     </div>
