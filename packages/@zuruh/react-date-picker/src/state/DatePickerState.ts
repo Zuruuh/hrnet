@@ -1,15 +1,17 @@
 import type { Setter } from '../types/setter';
+import type { Dayjs } from 'dayjs';
 
 export type DatePickerState =
   | ({ initialized: false } & UninitializedDatePickerState)
   | ({ initialized: true } & InitializedDatePickerState);
 
-export interface UninitializedDatePickerState {
-  selectedDate: Date | null;
-  setSelectedDate: Setter<Date | null> | null;
-}
+export type UninitializedDatePickerState = Record<PropertyKey, unknown>;
 
 export interface InitializedDatePickerState {
-  selectedDate: Date | null;
-  setSelectedDate: Setter<Date | null>;
+  selectedDate: Dayjs | null;
+  setSelectedDate: Setter<Dayjs | null>;
+  temporarySelectedMonth: number;
+  setTemporarySelectedMonth: Setter<number>;
+  temporarySelectedYear: number;
+  setTemporarySelectedYear: Setter<number>;
 }
