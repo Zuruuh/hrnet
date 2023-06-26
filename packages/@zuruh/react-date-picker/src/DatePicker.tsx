@@ -2,8 +2,9 @@ import { forwardRef, useState, type ReactNode } from 'react';
 import type { DivPropsWithoutRef } from 'react-html-props';
 import { DatePickerContext } from './context/DatePickerContext';
 import { Calendar } from './components/Calendar';
-import { Days } from './components/Days';
 import { Setter } from './types/setter';
+import { Week } from './components/Week';
+import { Day } from './components/Day';
 import day, { type Dayjs } from 'dayjs';
 
 export interface DatePickerProps extends DivPropsWithoutRef {
@@ -31,7 +32,6 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
           setTemporarySelectedMonth,
           temporarySelectedYear,
           setTemporarySelectedYear,
-          initialized: true,
         }}
       >
         <div data-testid="date-picker" ref={ref}>
@@ -45,5 +45,6 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
 export default {
   Root: DatePicker,
   Calendar,
-  Days,
+  Week,
+  Day,
 };

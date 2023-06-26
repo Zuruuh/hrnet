@@ -15,9 +15,6 @@ export interface DaysProps extends Omit<DivPropsWithoutRef, 'children'> {
   children: (props: DaysInnerProps) => ReactNode;
 }
 
-const MONDAY = 1;
-const DAYS_COUNT_IN_A_WEEK = 6; // range from 0 to 6 where 0 is Sunday and 6 is Saturday
-
 export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
   { children, ...rest },
   ref
@@ -34,6 +31,7 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
     },
     [setSelectedDate]
   );
+
   const generateDefaultProps = useCallback(
     (date: Dayjs) =>
       ({
@@ -103,10 +101,7 @@ export const Days = forwardRef<HTMLDivElement, DaysProps>(function Days(
   return (
     <div ref={ref} {...rest}>
       {calendar.map((entries) => (
-        <div
-          style={{ display: 'flex', gap: '5px' }}
-          key={JSON.stringify(entries)}
-        >
+        <div style={{ display: 'flex', gap: '5px' }}>
           {entries.map((entry) => (
             <div
               key={JSON.stringify(entry)}

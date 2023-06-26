@@ -1,11 +1,9 @@
-import { type ReactNode, forwardRef } from 'react';
+import { type ReactNode, type FC } from 'react';
 
 export interface CalendarProps {
-  children: ReactNode;
+  children: ReactNode | (() => ReactNode);
 }
 
-export const Calendar = forwardRef<HTMLDivElement, CalendarProps>(
-  function Calendar({ children }, ref) {
-    return <div ref={ref}>{children}</div>;
-  }
-);
+export const Calendar: FC<CalendarProps> = ({ children }) => {
+  return <>{typeof children === 'function' ? children() : children}</>;
+};
