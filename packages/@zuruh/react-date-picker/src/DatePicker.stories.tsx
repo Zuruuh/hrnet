@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { DatePicker } from './';
 import type { Story } from '@ladle/react';
 import { withStrictMode } from './ladle/decorators/withStrictMode';
-import { type Dayjs } from 'dayjs';
+import day, { type Dayjs } from 'dayjs';
+import week from 'dayjs/plugin/weekOfYear';
+
+day.extend(week);
 
 export const HelloWorld: Story = () => {
   const [date, setDate] = useState<Dayjs | null>(null);
@@ -14,21 +17,17 @@ export const HelloWorld: Story = () => {
   return (
     <DatePicker.Root setSelectedDate={setDate} selectedDate={date}>
       <DatePicker.Calendar>
-        {({ week }) => (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <DatePicker.Week week={week}>
-              {({ day }) => (
+            <DatePicker.Week>
                 <div style={{ display: 'flex' }}>
-                  <DatePicker.Day day={day}>
+                  <DatePicker.Day>
                     {({ onClick: onDayClick, date: dayDate }) => (
                       <div onClick={onDayClick}>{dayDate.date()}</div>
                     )}
                   </DatePicker.Day>
                 </div>
-              )}
             </DatePicker.Week>
           </div>
-        )}
       </DatePicker.Calendar>
     </DatePicker.Root>
   );

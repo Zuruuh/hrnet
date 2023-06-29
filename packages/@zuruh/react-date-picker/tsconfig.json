@@ -14,6 +14,7 @@
     "declarationDir": "types",
     "emitDeclarationOnly": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "stripInternal": true,
 
     /* Linting */
     "strict": true,
