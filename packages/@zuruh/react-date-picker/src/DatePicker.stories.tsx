@@ -17,17 +17,20 @@ export const HelloWorld: Story = () => {
   return (
     <DatePicker.Root setSelectedDate={setDate} selectedDate={date}>
       <DatePicker.Calendar>
+        {({ weekNumber }) => (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <p>{weekNumber}</p>
             <DatePicker.Week>
-                <div style={{ display: 'flex' }}>
-                  <DatePicker.Day>
-                    {({ onClick: onDayClick, date: dayDate }) => (
-                      <div onClick={onDayClick}>{dayDate.date()}</div>
-                    )}
-                  </DatePicker.Day>
-                </div>
+              <div style={{ display: 'flex' }}>
+                <DatePicker.Day>
+                  {({ onClick: onDayClick, date: dayDate }) => (
+                    <div onClick={onDayClick}>{dayDate.date()}</div>
+                  )}
+                </DatePicker.Day>
+              </div>
             </DatePicker.Week>
           </div>
+        )}
       </DatePicker.Calendar>
     </DatePicker.Root>
   );

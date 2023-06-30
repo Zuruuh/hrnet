@@ -11,7 +11,12 @@ export interface DatePickerState {
   setTemporarySelectedYear: Setter<number>;
 }
 
-const DatePickerContext = createContext<DatePickerState | undefined>(undefined);
+/**
+ * @internal
+ */
+export const DatePickerContext = createContext<DatePickerState | undefined>(
+  undefined
+);
 
 export function useDatePickerContext(): DatePickerState {
   const state = useContext(DatePickerContext);

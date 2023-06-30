@@ -4,7 +4,12 @@ export interface WeekContextState {
   weekNumber: number;
 }
 
-const WeekContext = createContext<WeekContextState | undefined>(undefined);
+/**
+ * @internal
+ */
+export const WeekContext = createContext<WeekContextState | undefined>(
+  undefined
+);
 
 export function useWeekContext(): WeekContextState {
   const state = useContext(WeekContext);
