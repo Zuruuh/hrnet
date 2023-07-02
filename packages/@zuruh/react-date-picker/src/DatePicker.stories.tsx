@@ -15,21 +15,29 @@ export const HelloWorld: Story = () => {
   }, [date]);
 
   return (
-    <DatePicker.Root setSelectedDate={setDate} selectedDate={date}>
-      <DatePicker.Calendar>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <DatePicker.Week>
+    <>
+      <p>The current selected date is: {date?.toString()}</p>
+      <DatePicker.Root setSelectedDate={setDate} selectedDate={date}>
+        <DatePicker.Calendar>
+          {({ weekNumber }) => (
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}
+            >
+              <p>{weekNumber}</p>
+              <DatePicker.Week>
                 <div style={{ display: 'flex' }}>
                   <DatePicker.Day>
                     {({ onClick: onDayClick, date: dayDate }) => (
-                      <div onClick={onDayClick}>{dayDate.date()}</div>
+                      <button onClick={onDayClick}>{dayDate.date()}</button>
                     )}
                   </DatePicker.Day>
                 </div>
-            </DatePicker.Week>
-          </div>
-      </DatePicker.Calendar>
-    </DatePicker.Root>
+              </DatePicker.Week>
+            </div>
+          )}
+        </DatePicker.Calendar>
+      </DatePicker.Root>
+    </>
   );
 };
 

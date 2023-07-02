@@ -9,6 +9,10 @@ importers:
   .: {}
 
   packages/@zuruh/react-date-picker:
+    dependencies:
+      '@zuruh/react-date-picker':
+        specifier: ^0.0.1
+        version: 'link:'
     devDependencies:
       '@ladle/react':
         specifier: ^2.15.0
