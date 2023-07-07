@@ -11,6 +11,9 @@ export const WeekContext = createContext<WeekContextState | undefined>(
   undefined
 );
 
+/**
+ * @internal
+ */
 export function useWeekContext(): WeekContextState {
   const state = useContext(WeekContext);
   if (state === undefined) {

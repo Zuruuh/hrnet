@@ -20,9 +20,7 @@ export const HelloWorld: Story = () => {
       <DatePicker.Root setSelectedDate={setDate} selectedDate={date}>
         <DatePicker.Calendar>
           {({ weekNumber }) => (
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}
-            >
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
               <p>{weekNumber}</p>
               <DatePicker.Week>
                 <div style={{ display: 'flex' }}>
