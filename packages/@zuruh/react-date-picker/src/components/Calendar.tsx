@@ -1,4 +1,4 @@
-import { type ReactNode, type FC } from 'react';
+import { type ReactNode, type FC, useMemo } from 'react';
 import day from 'dayjs';
 import { WeekContext } from '../context/WeekContext';
 import { useDatePickerContext } from '../context/DatePickerContext';
@@ -15,7 +15,10 @@ const RENDERED_WEEKS = 5;
 
 export const Calendar: FC<CalendarProps> = ({ children }) => {
   const { selectedDate } = useDatePickerContext();
-  const date = selectedDate ?? day();
+  const date = useMemo(
+    () => (selectedDate ?? day()).set('date', 1),
+    [selectedDate]
+  );
 
   return (
     <>
