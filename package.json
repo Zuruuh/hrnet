@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@biomejs/biome": "^1.5.3",
+    "@fontsource/inter": "^5.0.16",
     "@hookform/resolvers": "^3.3.4",
     "@tanstack/react-query": "^5.17.19",
     "@tanstack/react-router": "^1.14.0",
+    "@zuruuh/react-date-picker": "^0.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.49.3",
@@ -29,10 +31,11 @@
     "@tanstack/router-devtools": "^1.14.0",
     "@tanstack/router-vite-plugin": "^1.12.16",
     "@types/bun": "^1.0.4",
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react-swc": "^3.5.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "million": "^2.6.4",
+    "typescript": "^5.3.3",
+    "vite": "^5..0.12"
   }
 }

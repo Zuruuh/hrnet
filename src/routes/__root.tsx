@@ -1,7 +1,10 @@
 import { lazy, type FC, Suspense } from 'react';
 import { Outlet, createRootRoute } from '@tanstack/react-router';
+import { NavBar } from '../components/Layout/NavBar';
 import { css } from '../../styled-system/css';
+import { Footer } from '../components/Layout/Footer';
 
+// Include dev-tools in bundle only in dev-env
 const TanStackRouterDevtools = import.meta.env.DEV
 	? lazy(() =>
 			import('@tanstack/router-devtools').then((res) => ({
@@ -25,13 +28,26 @@ export const Root: FC = () => {
 				<ReactQueryDevTools />
 				<TanStackRouterDevtools />
 			</Suspense>
-			<nav className={css({ display: 'flex' })}>
-				<h1>HRNet</h1>
-			</nav>
-			<main>
-				<Outlet />
-			</main>
-			<footer></footer>
+			<div
+				className={css({
+					display: 'flex',
+					flexDir: 'column',
+					minHeight: 'screen',
+					justifyContent: 'flex-start',
+				})}
+			>
+				<NavBar />
+				<main
+					className={css({
+						fontFamily: 'inter',
+						flexGrow: '1',
+						backgroundColor: 'gray.100',
+					})}
+				>
+					<Outlet />
+				</main>
+				<Footer />
+			</div>
 		</>
 	);
 };
