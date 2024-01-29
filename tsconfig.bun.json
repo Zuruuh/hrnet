@@ -1,15 +1,15 @@
 {
-	"compilerOptions": {
-		"composite": true,
-		"skipLibCheck": true,
-		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"allowSyntheticDefaultImports": true
-	},
-	"include": [
-		"vite.config.ts",
-		"panda.config.ts",
-		"postcss.config.cjs",
-		"styled-system"
-	]
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "vite.config.ts",
+    "panda.config.ts",
+    "postcss.config.cjs",
+    "styled-system"
+  ]
 }
