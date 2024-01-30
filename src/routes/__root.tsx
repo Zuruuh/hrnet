@@ -43,6 +43,7 @@ export const Root: FC = () => {
             fontFamily: 'inter',
             flexGrow: '1',
             backgroundColor: 'gray.100',
+            display: 'flex',
           })}
         >
           <Outlet />

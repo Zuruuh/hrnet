@@ -4,6 +4,46 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { valibotResolver } from '@hookform/resolvers/valibot';
 import { Departments, Employee } from '../schemas';
 import { useQuery } from '@tanstack/react-query';
+import { css } from '../../styled-system/css';
+import clsx from 'clsx';
+
+const inputStyle = css({
+  height: 10,
+  width: 'full',
+  rounded: 'sm',
+  borderWidth: 1,
+  borderColor: 'hsl(240 5.9% 90%)',
+  paddingX: 3,
+  paddingY: 2,
+  fontSize: 'sm',
+  ringColor: 'hsl(240 5.9% 90%)',
+  _disabled: {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+  },
+});
+
+const labelStyle = css({
+  fontSize: 'sm',
+  fontWeight: 500,
+  marginTop: 2,
+  _peerDisabled: { cursor: 'not-allowed', opacity: 0.7 },
+});
+
+const fieldStyle = css({
+  display: 'flex',
+  flexDirection: 'column-reverse',
+  width: 'full',
+});
+
+const fieldLineStyle = css({
+  display: 'grid',
+  gridTemplateColumns: 1,
+  gap: 4,
+  sm: {
+    gridTemplateColumns: 2,
+  },
+});
 
 export const HomePage: FC = () => {
   const form = useForm<Employee>({ resolver: valibotResolver(Employee) });
@@ -30,173 +70,214 @@ export const HomePage: FC = () => {
   });
 
   return (
-    <section>
-      <header>
-        <h4>Create New Employee</h4>
-        <p>Enter the employee's information below.</p>
-      </header>
-      <form onSubmit={form.handleSubmit(createEmployee)}>
-        <div>
-          <div>
-            <label htmlFor={firstNameId}>First name</label>
-            <input
-              {...form.register('firstName')}
-              autoFocus
-              autoComplete="given-name"
-              id={firstNameId}
-            />
-          </div>
-
-          <div>
-            <label htmlFor={lastNameId}>Last name</label>
-            <input
-              {...form.register('lastName')}
-              autoComplete="family-name"
-              id={lastNameId}
-            />
-          </div>
-        </div>
-
-        <div>{/* TODO: add date picker inputs here*/}</div>
-
-        <fieldset>
-          <div>
-            <label htmlFor={streetId}>Street</label>
-            <input
-              {...form.register('street')}
-              autoComplete="street-address"
-              id={streetId}
-            />
-          </div>
-
-          <div>
-            <div>
-              <label htmlFor={cityId}>City</label>
-              <input {...form.register('city')} id={cityId} />
+    <section
+      className={css({
+        flexGrow: 2,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      })}
+    >
+      <article
+        className={css({
+          backgroundColor: 'white',
+          rounded: 'lg',
+          shadow: 'sm',
+          border: 1,
+          padding: 6,
+          maxWidth: '2xl',
+        })}
+      >
+        <header
+          className={css({
+            display: 'flex',
+            flexDirection: 'column',
+            lineHeight: 1.5,
+            paddingBottom: 3,
+          })}
+        >
+          <h3 className={css({ fontSize: '2xl', fontWeight: 600 })}>
+            Create New Employee
+          </h3>
+          <p className={css({ fontSize: 'sm', color: 'gray.500' })}>
+            Enter the employee's information below.
+          </p>
+        </header>
+        <form onSubmit={form.handleSubmit(createEmployee)}>
+          <div className={fieldLineStyle}>
+            <div className={fieldStyle}>
+              <input
+                {...form.register('firstName')}
+                autoFocus
+                autoComplete="given-name"
+                placeholder="John"
+                className={clsx('peer', inputStyle)}
+                id={firstNameId}
+              />
+              <label className={labelStyle} htmlFor={firstNameId}>
+                First name
+              </label>
             </div>
-            <div>
-              <label htmlFor={stateId}>State</label>
-              {areStatesLoaded ? (
-                <>
+
+            <div className={fieldStyle}>
+              <input
+                {...form.register('lastName')}
+                autoComplete="family-name"
+                placeholder="Doe"
+                className={clsx('peer', inputStyle)}
+                id={lastNameId}
+              />
+              <label className={labelStyle} htmlFor={lastNameId}>
+                Last name
+              </label>
+            </div>
+          </div>
+
+          <div>{/* TODO: add date picker inputs here*/}</div>
+
+          <fieldset
+            className={css({
+              // space-y-4 border border-gray-200 rounded-md p-4
+              marginY: 4,
+              borderWidth: 1,
+              borderColor: 'gray.200',
+              rounded: 'md',
+              padding: 4,
+              paddingTop: 2,
+            })}
+          >
+            <legend
+              className={css({
+                fontWeight: 500,
+                fontSize: 'lg',
+              })}
+            >
+              Address
+            </legend>
+            <div className={fieldStyle}>
+              <input
+                {...form.register('street')}
+                autoComplete="street-address"
+                placeholder="123 Main Street"
+                className={clsx('peer', inputStyle)}
+                id={streetId}
+              />
+              <label className={labelStyle} htmlFor={streetId}>
+                Street
+              </label>
+            </div>
+
+            <div className={fieldLineStyle}>
+              <div className={fieldStyle}>
+                <input
+                  {...form.register('city')}
+                  placeholder="San Fransisco"
+                  className={clsx('peer', inputStyle)}
+                  id={cityId}
+                />
+                <label className={labelStyle} htmlFor={cityId}>
+                  City
+                </label>
+              </div>
+              <div className={fieldStyle}>
+                {areStatesLoaded ? (
+                  <>
+                    <input
+                      {...form.register('state')}
+                      id={stateId}
+                      placeholder="CA"
+                      className={clsx('peer', inputStyle)}
+                      list={statesDatalistId}
+                    />
+                    <datalist id={statesDatalistId}>
+                      {states.map((state) => (
+                        <option
+                          value={state.abbreviation}
+                          key={state.abbreviation}
+                        >
+                          {state.name}
+                        </option>
+                      ))}
+                    </datalist>
+                  </>
+                ) : (
+                  // todo add a spinner loader here
                   <input
                     {...form.register('state')}
+                    placeholder="CA"
+                    className={clsx('peer', inputStyle)}
                     id={stateId}
-                    list={statesDatalistId}
                   />
-                  <datalist id={statesDatalistId}>
-                    {states.map((state) => (
-                      <option
-                        value={state.abbreviation}
-                        key={state.abbreviation}
-                      >
-                        {state.name}
-                      </option>
-                    ))}
-                  </datalist>
-                </>
-              ) : (
-                // todo add a spinner loader here
-                <input {...form.register('state')} id={stateId} />
-              )}
+                )}
+                <label htmlFor={stateId}>State</label>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor={zipCodeId}>Zip Code</label>
-            <input
-              {...form.register('zipcode')}
-              autoComplete="postal-code"
-              id={zipCodeId}
-            />
-          </div>
+            <div className={fieldStyle}>
+              <input
+                {...form.register('zipcode')}
+                autoComplete="postal-code"
+                placeholder="93190"
+                className={clsx('peer', inputStyle)}
+                id={zipCodeId}
+              />
+              <label className={labelStyle} htmlFor={zipCodeId}>
+                Zip Code
+              </label>
+            </div>
 
-          <div>
-            <label htmlFor={departmentId}>Department</label>
-            <select {...form.register('department')} id={departmentId}>
-              {Departments.map((department) => (
-                <option key={department}>{department}</option>
-              ))}
-            </select>
+            <div className={fieldStyle}>
+              <select
+                className={clsx('peer', inputStyle)}
+                {...form.register('department')}
+                id={departmentId}
+              >
+                {Departments.map((department) => (
+                  <option key={department}>{department}</option>
+                ))}
+              </select>
+              <label className={labelStyle} htmlFor={departmentId}>
+                Department
+              </label>
+            </div>
+          </fieldset>
+
+          <div
+            className={css({
+              display: 'flex',
+              alignItems: 'center',
+            })}
+          >
+            <button
+              type="submit"
+              className={css({
+                whiteSpace: 'nowrap',
+                rounded: 'md',
+                fontSize: 'sm',
+                fontWeight: 500,
+                backgroundColor: 'black',
+                color: 'white',
+                height: 10,
+                paddingX: 4,
+                paddingY: 2,
+                marginLeft: 'auto',
+                cursor: 'pointer',
+                ringOffset: 1,
+                _active: {
+                  opacity: 0.9,
+                },
+              })}
+            >
+              Create Employee
+            </button>
           </div>
-        </fieldset>
-      </form>
+        </form>
+      </article>
     </section>
   );
 };
 
-//
-// <main className="flex flex-col items-center justify-center flex-1 py-12">
-//       <Card className="w-full max-w-2xl">
-//         <CardHeader>
-//           <CardTitle>Create New Employee</CardTitle>
-//           <CardDescription>Enter the employee's information below.</CardDescription>
-//         </CardHeader>
-//         <CardContent className="space-y-4">
-//           <div className="grid grid-cols-2 gap-4">
-//             <div className="space-y-2">
-//               <Label htmlFor="first-name">First Name</Label>
-//               <Input id="first-name" placeholder="John" required />
-//             </div>
-//             <div className="space-y-2">
-//               <Label htmlFor="last-name">Last Name</Label>
-//               <Input id="last-name" placeholder="Doe" required />
-//             </div>
-//           </div>
-//           <div className="grid grid-cols-2 gap-4">
-//             <div className="space-y-2">
-//               <Label htmlFor="dob">Date of Birth</Label>
-//               <Input id="dob" required type="date" />
-//             </div>
-//             <div className="space-y-2">
-//               <Label htmlFor="start-date">Start Date</Label>
-//               <Input id="start-date" required type="date" />
-//             </div>
-//           </div>
-//           <div className="space-y-2">
-//             <Label htmlFor="street">Street</Label>
-//             <Input id="street" placeholder="123 Main St" required />
-//           </div>
-//           <div className="grid grid-cols-3 gap-4">
-//             <div className="space-y-2 col-span-2">
-//               <Label htmlFor="city">City</Label>
-//               <Input id="city" placeholder="San Francisco" required />
-//             </div>
-//             <div className="space-y-2">
-//               <Label htmlFor="state">State</Label>
-//               <Input id="state" placeholder="CA" required />
-//             </div>
-//           </div>
-//           <div className="space-y-2">
-//             <Label htmlFor="zip">Zip Code</Label>
-//             <Input id="zip" placeholder="94103" required />
-//           </div>
-//           <div className="space-y-2">
-//             <Label htmlFor="department">Department</Label>
-//             <Select>
-//               <SelectTrigger id="department">
-//                 <SelectValue placeholder="Select" />
-//               </SelectTrigger>
-//               <SelectContent position="popper">
-//                 <SelectItem value="hr">Human Resources</SelectItem>
-//                 <SelectItem value="it">Information Technology</SelectItem>
-//                 <SelectItem value="finance">Finance</SelectItem>
-//                 <SelectItem value="marketing">Marketing</SelectItem>
-//               </SelectContent>
-//             </Select>
-//           </div>
-//         </CardContent>
-//         <CardFooter>
-//           <Button className="ml-auto">Create Employee</Button>
-//         </CardFooter>
-//       </Card>
-//     </main>
-
-//       <button onclick="saveEmployee()">Save</button>
-//     </div>
-//     <div id="confirmation" class="modal">Employee Created!</div>
-//
-//   </>
-//   );
+// <div id="confirmation" class="modal">Employee Created!</div>
 
 export const Route = createFileRoute('/')({
   component: HomePage,
