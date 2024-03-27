@@ -31,13 +31,10 @@ export const NavBar: FC = () => {
       </Link>
       <div className={css({ display: 'flex', gap: 2, sm: { gap: 5 } })}>
         <Link to="/" className={css(linkStyle)}>
-          Home
+          Create a new employee
         </Link>
         <Link to="/" className={css(linkStyle)}>
-          About
-        </Link>
-        <Link to="/" className={css(linkStyle)}>
-          Contact
+          Employee list
         </Link>
       </div>
     </nav>
