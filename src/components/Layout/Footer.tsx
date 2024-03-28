@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { type FC } from 'react';
+import type { FC } from 'react';
 import { css } from '../../../styled-system/css';
 
 export const Footer: FC = () => {

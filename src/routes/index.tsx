@@ -1,34 +1,12 @@
-import { useCallback, type FC, useId } from 'react';
+import { type FC, useId, useRef, useEffect, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { valibotResolver } from '@hookform/resolvers/valibot';
-import { Departments, Employee } from '../schemas';
+import { useForm } from '@tanstack/react-form';
+import { valibotValidator } from '@tanstack/valibot-form-adapter';
+import { AddressField, Departments, Name, Zipcode } from '../schemas';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '../../styled-system/css';
-import clsx from 'clsx';
-
-const inputStyle = css({
-  height: 10,
-  width: 'full',
-  rounded: 'sm',
-  borderWidth: 1,
-  borderColor: 'hsl(240 5.9% 90%)',
-  paddingX: 3,
-  paddingY: 2,
-  fontSize: 'sm',
-  ringColor: 'hsl(240 5.9% 90%)',
-  _disabled: {
-    cursor: 'not-allowed',
-    opacity: 0.5,
-  },
-});
-
-const labelStyle = css({
-  fontSize: 'sm',
-  fontWeight: 500,
-  marginTop: 2,
-  _peerDisabled: { cursor: 'not-allowed', opacity: 0.7 },
-});
+import { Input, Select } from '../components/Form';
+import * as v from 'valibot';
 
 const fieldStyle = css({
   display: 'flex',
@@ -46,21 +24,23 @@ const fieldLineStyle = css({
 });
 
 export const HomePage: FC = () => {
-  const form = useForm<Employee>({ resolver: valibotResolver(Employee) });
-  const createEmployee: SubmitHandler<Employee> = useCallback((employee) => {
-    console.log(employee);
-  }, []);
-
-  const firstNameId = useId();
-  const lastNameId = useId();
-  // const birthDateId = useId();
-  // const startDateId = useId();
-  const streetId = useId();
-  const cityId = useId();
-  const stateId = useId();
-  const statesDatalistId = useId();
-  const zipCodeId = useId();
-  const departmentId = useId();
+  const form = useForm({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      street: '',
+      city: '',
+      state: '',
+      zipcode: '',
+      department: Departments[0],
+      birthDate: new Date(),
+      startDate: new Date(),
+    },
+    onSubmit: ({ value: employee }) => {
+      console.log(employee);
+    },
+    validatorAdapter: valibotValidator,
+  });
 
   const { data: states, isSuccess: areStatesLoaded } = useQuery({
     queryKey: ['states'],
@@ -68,6 +48,14 @@ export const HomePage: FC = () => {
       return (await import('../data/states')).states;
     },
   });
+
+  const statesDataListId = useId();
+
+  const firstNameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    firstNameInputRef.current?.focus();
+  }, []);
 
   return (
     <section
@@ -103,33 +91,53 @@ export const HomePage: FC = () => {
             Enter the employee's information below.
           </p>
         </header>
-        <form onSubmit={form.handleSubmit(createEmployee)}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void form.handleSubmit();
+          }}
+        >
           <div className={fieldLineStyle}>
             <div className={fieldStyle}>
-              <input
-                {...form.register('firstName')}
-                autoFocus
-                autoComplete="given-name"
-                placeholder="John"
-                className={clsx('peer', inputStyle)}
-                id={firstNameId}
-              />
-              <label className={labelStyle} htmlFor={firstNameId}>
-                First name
-              </label>
+              <form.Field
+                name="firstName"
+                validators={{
+                  onChangeAsync: Name,
+                  onChangeAsyncDebounceMs: 1500,
+                }}
+              >
+                {(field) => (
+                  <Input
+                    field={field}
+                    label="First name"
+                    inputRef={firstNameInputRef}
+                    autoComplete="given-name"
+                    placeholder="John"
+                    required
+                  />
+                )}
+              </form.Field>
             </div>
 
             <div className={fieldStyle}>
-              <input
-                {...form.register('lastName')}
-                autoComplete="family-name"
-                placeholder="Doe"
-                className={clsx('peer', inputStyle)}
-                id={lastNameId}
-              />
-              <label className={labelStyle} htmlFor={lastNameId}>
-                Last name
-              </label>
+              <form.Field
+                name="lastName"
+                validators={{
+                  onChangeAsyncDebounceMs: 1500,
+                  onChangeAsync: Name,
+                }}
+              >
+                {(field) => (
+                  <Input
+                    field={field}
+                    label="Last name"
+                    autoComplete="family-name"
+                    placeholder="Doe"
+                    required
+                  />
+                )}
+              </form.Field>
             </div>
           </div>
 
@@ -138,7 +146,7 @@ export const HomePage: FC = () => {
           <fieldset
             className={css({
               // space-y-4 border border-gray-200 rounded-md p-4
-              marginY: 4,
+              marginBottom: 4,
               borderWidth: 1,
               borderColor: 'gray.200',
               rounded: 'md',
@@ -155,90 +163,122 @@ export const HomePage: FC = () => {
               Address
             </legend>
             <div className={fieldStyle}>
-              <input
-                {...form.register('street')}
-                autoComplete="street-address"
-                placeholder="123 Main Street"
-                className={clsx('peer', inputStyle)}
-                id={streetId}
-              />
-              <label className={labelStyle} htmlFor={streetId}>
-                Street
-              </label>
+              <form.Field
+                name="street"
+                validators={{
+                  onChangeAsyncDebounceMs: 1500,
+                  onChangeAsync: AddressField,
+                }}
+              >
+                {(field) => (
+                  <>
+                    <Input
+                      field={field}
+                      label="Street"
+                      placeholder="123 Main Street"
+                      autoComplete="street-address"
+                      required
+                    />
+                  </>
+                )}
+              </form.Field>
             </div>
 
             <div className={fieldLineStyle}>
               <div className={fieldStyle}>
-                <input
-                  {...form.register('city')}
-                  placeholder="San Fransisco"
-                  className={clsx('peer', inputStyle)}
-                  id={cityId}
-                />
-                <label className={labelStyle} htmlFor={cityId}>
-                  City
-                </label>
+                <form.Field
+                  name="city"
+                  validators={{
+                    onChangeAsyncDebounceMs: 1500,
+                    onChangeAsync: AddressField,
+                  }}
+                >
+                  {(field) => (
+                    <>
+                      <Input
+                        field={field}
+                        label="City"
+                        placeholder="San Fransisco"
+                        required
+                      />
+                    </>
+                  )}
+                </form.Field>
               </div>
               <div className={fieldStyle}>
+                <form.Field
+                  name="state"
+                  validators={{
+                    onSubmit: areStatesLoaded
+                      ? v.union(
+                          states!.map((state) => v.literal(state.abbreviation)),
+                          'Invalid state',
+                        )
+                      : undefined,
+                  }}
+                >
+                  {(field) => (
+                    <>
+                      <Input
+                        field={field}
+                        label="State"
+                        placeholder="CA"
+                        required
+                        list={areStatesLoaded ? statesDataListId : undefined}
+                      />
+                    </>
+                  )}
+                </form.Field>
                 {areStatesLoaded ? (
-                  <>
-                    <input
-                      {...form.register('state')}
-                      id={stateId}
-                      placeholder="CA"
-                      className={clsx('peer', inputStyle)}
-                      list={statesDatalistId}
-                    />
-                    <datalist id={statesDatalistId}>
-                      {states.map((state) => (
-                        <option
-                          value={state.abbreviation}
-                          key={state.abbreviation}
-                        >
-                          {state.name}
-                        </option>
-                      ))}
-                    </datalist>
-                  </>
+                  <datalist id={statesDataListId}>
+                    {states.map((state) => (
+                      <option
+                        value={state.abbreviation}
+                        key={state.abbreviation}
+                      >
+                        {state.name}
+                      </option>
+                    ))}
+                  </datalist>
                 ) : (
-                  // todo add a spinner loader here
-                  <input
-                    {...form.register('state')}
-                    placeholder="CA"
-                    className={clsx('peer', inputStyle)}
-                    id={stateId}
-                  />
+                  <></>
                 )}
-                <label htmlFor={stateId}>State</label>
               </div>
             </div>
 
             <div className={fieldStyle}>
-              <input
-                {...form.register('zipcode')}
-                autoComplete="postal-code"
-                placeholder="93190"
-                className={clsx('peer', inputStyle)}
-                id={zipCodeId}
-              />
-              <label className={labelStyle} htmlFor={zipCodeId}>
-                Zip Code
-              </label>
+              <form.Field
+                name="zipcode"
+                validators={{
+                  onChangeAsyncDebounceMs: 1500,
+                  onChangeAsync: Zipcode,
+                }}
+              >
+                {(field) => (
+                  <>
+                    <Input
+                      field={field}
+                      label="Zip Code"
+                      autoComplete="postal-code"
+                      placeholder="93190"
+                      required
+                    />
+                  </>
+                )}
+              </form.Field>
             </div>
 
             <div className={fieldStyle}>
-              <select
-                className={clsx('peer', inputStyle)}
-                {...form.register('department')}
-                id={departmentId}
-              >
-                {Departments.map((department) => (
-                  <option key={department}>{department}</option>
-                ))}
-              </select>
-              <label className={labelStyle} htmlFor={departmentId}>
-                Department
-              </label>
+              <form.Field name="department">
+                {(field) => (
+                  <Select
+                    field={field}
+                    label="Department"
+                    options={Departments}
+                    required
+                  />
+                )}
+              </form.Field>
             </div>
           </fieldset>
 

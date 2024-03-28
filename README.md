@@ -2,4 +2,4 @@
 
 ## Requirements
 
-- [Bun](https://bun.sh) v^1.0.25
+- [Bun](https://bun.sh) v^1.0.35
