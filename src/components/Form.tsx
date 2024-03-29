@@ -1,5 +1,5 @@
-import { FieldApi } from '@tanstack/react-form';
-import { type HTMLProps, type FC, MutableRefObject } from 'react';
+import type { FieldApi } from '@tanstack/react-form';
+import type { HTMLProps, FC, MutableRefObject } from 'react';
 import { css } from '../../styled-system/css';
 
 const inputStyle = css({
@@ -25,7 +25,10 @@ const labelStyle = css({
   _peerDisabled: { cursor: 'not-allowed', opacity: 0.7 },
 });
 
-const FieldInfo: FC<{ field: FieldApi<any, any, any, any> }> = ({ field }) => {
+// biome-ignore lint/suspicious/noExplicitAny:
+type AnyField = FieldApi<any, any, any, any>;
+
+const FieldInfo: FC<{ field: AnyField }> = ({ field }) => {
   return (
     <>
       {field.state.meta.touchedErrors ? (
@@ -44,13 +47,13 @@ const FieldInfo: FC<{ field: FieldApi<any, any, any, any> }> = ({ field }) => {
 };
 
 export interface FieldProps extends HTMLProps<HTMLInputElement> {
-  field: FieldApi<any, any, any, any>;
+  field: AnyField;
   label: string;
   inputRef?: MutableRefObject<HTMLInputElement | null>;
 }
 
 export interface SelectProps extends HTMLProps<HTMLSelectElement> {
-  field: FieldApi<any, any, any, any>;
+  field: AnyField;
   label: string;
   options: string[];
   selectRef?: MutableRefObject<HTMLSelectElement | null>;
@@ -66,7 +69,7 @@ export const Select: FC<SelectProps> = ({
   if (!selectProps.className) {
     selectProps.className = '';
   }
-  selectProps.className += 'peer ' + inputStyle;
+  selectProps.className += `peer ${inputStyle}`;
 
   return (
     <>
@@ -99,7 +102,7 @@ export const Input: FC<FieldProps> = ({
   if (!inputProps.className) {
     inputProps.className = '';
   }
-  inputProps.className += 'peer ' + inputStyle;
+  inputProps.className += `peer ${inputStyle}`;
 
   return (
     <>

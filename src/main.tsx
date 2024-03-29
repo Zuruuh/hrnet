@@ -33,7 +33,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const root = createRoot(document.getElementById('root')!);
+const root = createRoot(document.getElementById('app')!);
 const queryClient = new QueryClient();
 
 root.render(

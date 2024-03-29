@@ -33,7 +33,7 @@ export const NavBar: FC = () => {
         <Link to="/" className={css(linkStyle)}>
           Create a new employee
         </Link>
-        <Link to="/" className={css(linkStyle)}>
+        <Link to="/employees" className={css(linkStyle)}>
           Employee list
         </Link>
       </div>
