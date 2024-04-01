@@ -209,7 +209,8 @@ export const HomePage: FC = () => {
                 <form.Field
                   name="state"
                   validators={{
-                    onSubmit: areStatesLoaded
+                    onChangeAsyncDebounceMs: 1500,
+                    onChangeAsync: areStatesLoaded
                       ? v.union(
                           states!.map((state) => v.literal(state.abbreviation)),
                           'Invalid state',
