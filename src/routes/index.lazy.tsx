@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useRef, type FC } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
-import { valibotValidator } from '@tanstack/valibot-form-adapter';
-import { AddressField, Departments, Name, Zipcode } from '../schemas';
+import { zodValidator } from '@tanstack/zod-form-adapter';
+import {
+  AddressField,
+  BirthDate,
+  Date,
+  Departments,
+  Name,
+  Zipcode,
+} from '../schemas';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '../../styled-system/css';
-import { Input, Select } from '../components/Form';
-import * as v from 'valibot';
+import { Select } from '../components/Form/Select';
+import { Input } from '../components/Form/Input';
+import { DAYJS_HTML5_FORMAT, DateInput } from '../components/Form/DateInput';
+import { z } from 'zod';
 import { Button, Form } from 'react-aria-components';
+import dayjs from 'dayjs';
 
 const fieldStyle = css({
   display: 'flex',
@@ -33,14 +43,15 @@ export const HomePage: FC = () => {
       city: '',
       state: '',
       zipcode: '',
-      department: Departments[0],
-      birthDate: new Date(),
-      startDate: new Date(),
+      department: Departments.Values.Sales,
+      birthDate: null,
+      startDate: dayjs().format(DAYJS_HTML5_FORMAT),
     },
     onSubmit: ({ value: employee }) => {
       console.log(employee);
     },
-    validatorAdapter: valibotValidator,
+    onSubmitInvalid: console.warn,
+    validatorAdapter: zodValidator,
   });
 
   const { data: states, isSuccess: areStatesLoaded } = useQuery({
@@ -59,15 +70,14 @@ export const HomePage: FC = () => {
   const StateValidator = useMemo(
     () =>
       areStatesLoaded
-        ? v.transform(
-            v.union(
-              states!.map((state) => v.literal(state.name)),
-              'Invalid state',
-            ),
-            (state) => states.find((s) => s.name === state)!.abbreviation,
-          )
+        ? z
+            .string()
+            .regex(new RegExp(`(${states.join('|')})`), 'Invalid state')
+            .transform(
+              (state) => states.find((s) => s.name === state)!.abbreviation,
+            )
         : undefined,
-    [areStatesLoaded],
+    [areStatesLoaded, states],
   );
 
   return (
@@ -156,11 +166,50 @@ export const HomePage: FC = () => {
             </div>
           </div>
 
-          <div>{/* TODO: add date picker inputs here*/}</div>
+          <div className={fieldLineStyle}>
+            <div className={fieldStyle}>
+              <form.Field
+                name="birthDate"
+                validators={{
+                  onChangeAsync: BirthDate,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: BirthDate,
+                }}
+              >
+                {(field) => (
+                  <DateInput
+                    field={field}
+                    label="Date of Birth"
+                    autoComplete="bday"
+                    aria-required
+                    datePickerOptions={{
+                      maximumSelectableDate: dayjs()
+                        .subtract(18, 'years')
+                        .endOf('month'),
+                    }}
+                  />
+                )}
+              </form.Field>
+            </div>
+
+            <div className={fieldStyle}>
+              <form.Field
+                name="startDate"
+                validators={{
+                  onChangeAsync: Date,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: Date,
+                }}
+              >
+                {(field) => (
+                  <DateInput field={field} label="Start Date" aria-required />
+                )}
+              </form.Field>
+            </div>
+          </div>
 
           <fieldset
             className={css({
-              // space-y-4 border border-gray-200 rounded-md p-4
               marginBottom: 4,
               borderWidth: 1,
               borderColor: 'gray.200',
@@ -264,7 +313,20 @@ export const HomePage: FC = () => {
                       placeholder="93190"
                       type="number"
                       inputMode="numeric"
+                      min={10000}
+                      max={99999}
+                      maxLength={5}
                       aria-required
+                      className={css({
+                        '&::-webkit-inner-spin-button': {
+                          display: 'none',
+                          visibility: 'hidden',
+                        },
+                        '&::-webkit-outer-spin-button': {
+                          display: 'none',
+                          visibility: 'hidden',
+                        },
+                      })}
                     />
                   </>
                 )}
@@ -284,7 +346,7 @@ export const HomePage: FC = () => {
                   <Select
                     field={field}
                     label="Department"
-                    options={Departments}
+                    options={Object.values(Departments.Values)}
                     aria-required
                   />
                 )}

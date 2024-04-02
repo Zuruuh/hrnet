@@ -1,43 +1,48 @@
 import dayjs from 'dayjs';
-import * as v from 'valibot';
+import { z } from 'zod';
+import { DAYJS_HTML5_FORMAT } from './components/Form/DateInput';
 
-export const Departments = [
+export const Departments = z.enum([
   'Sales',
   'Marketing',
   'Engineering',
   'Human Resources',
   'Legal',
-];
+] as const);
 
-export const Department = v.union(
-  Departments.map((department) => v.literal(department)),
+export const Name = z
+  .string()
+  .min(2, 'Value should be at least 2 chars')
+  .transform((name) => name.charAt(0).toUpperCase().concat(name.slice(1)));
+export type Name = z.infer<typeof Name>;
+
+export const AddressField = z
+  .string()
+  .min(2, 'Value should be at least 2 chars');
+export type AddressField = z.infer<typeof AddressField>;
+
+export const Zipcode = z.string().regex(/^\d{5}$/, 'Invalid zipcode');
+export type Zipcode = z.infer<typeof Zipcode>;
+
+export const Date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+export type Date = z.infer<typeof Date>;
+
+export const BirthDate = Date.refine((date) =>
+  dayjs(date, DAYJS_HTML5_FORMAT).isBefore(
+    dayjs().subtract(18, 'years').startOf('month'),
+  ),
 );
-export type Department = v.Output<typeof Department>;
+export type BirthDate = z.infer<typeof BirthDate>;
 
-export const Name = v.transform(
-  v.string([v.minLength(2, 'Value should be at least 2 chars')]),
-  (name) => name.charAt(0).toUpperCase().concat(name.slice(1)),
-);
-
-export type Name = v.Output<typeof Name>;
-
-export const AddressField = v.string([
-  v.minLength(2, 'Value should be at least 2 chars'),
-]);
-export type AddressField = v.Output<typeof AddressField>;
-
-export const Zipcode = v.string([v.regex(/^\d{5}$/, 'Invalid zipcode')]);
-export type Zipcode = v.Output<typeof Zipcode>;
-
-export const Employee = v.object({
+export const Employee = z.object({
   firstName: Name,
   lastName: Name,
-  birthDate: v.date([v.minValue(dayjs().subtract(18, 'years').toDate())]),
-  startDate: v.date(),
+  birthDate: BirthDate,
+  startDate: Date,
   street: AddressField,
   city: AddressField,
   state: AddressField,
   zipcode: Zipcode,
-  department: Department,
+  department: Departments,
 });
-export type Employee = v.Output<typeof Employee>;
+export type Employee = z.infer<typeof Employee>;
