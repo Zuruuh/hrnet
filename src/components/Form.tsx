@@ -1,5 +1,16 @@
 import type { FieldApi } from '@tanstack/react-form';
 import type { HTMLProps, FC, MutableRefObject } from 'react';
+import {
+  Button,
+  ComboBox,
+  FieldError,
+  Input,
+  Label,
+  ListBox,
+  ListBoxItem,
+  Popover,
+  TextField,
+} from 'react-aria-components';
 import { css } from '../../styled-system/css';
 
 const inputStyle = css({
@@ -7,14 +18,17 @@ const inputStyle = css({
   width: 'full',
   rounded: 'sm',
   borderWidth: 1,
-  borderColor: 'hsl(240 5.9% 90%)',
+  borderColor: 'gray.300',
   paddingX: 3,
   paddingY: 2,
   fontSize: 'sm',
-  ringColor: 'hsl(240 5.9% 90%)',
+  ringColor: 'gray.400',
   _disabled: {
     cursor: 'not-allowed',
     opacity: 0.5,
+  },
+  '&[aria-invalid]': {
+    borderColor: 'red',
   },
 });
 
@@ -22,29 +36,10 @@ const labelStyle = css({
   fontSize: 'sm',
   fontWeight: 500,
   marginTop: 2,
-  _peerDisabled: { cursor: 'not-allowed', opacity: 0.7 },
 });
 
 // biome-ignore lint/suspicious/noExplicitAny:
 type AnyField = FieldApi<any, any, any, any>;
-
-const FieldInfo: FC<{ field: AnyField }> = ({ field }) => {
-  return (
-    <>
-      {field.state.meta.touchedErrors ? (
-        <em
-          className={css({
-            fontSize: 'xs',
-            color: 'red.500',
-            minHeight: '18px',
-          })}
-        >
-          {field.state.meta.touchedErrors}
-        </em>
-      ) : null}
-    </>
-  );
-};
 
 export interface FieldProps extends HTMLProps<HTMLInputElement> {
   field: AnyField;
@@ -52,11 +47,11 @@ export interface FieldProps extends HTMLProps<HTMLInputElement> {
   inputRef?: MutableRefObject<HTMLInputElement | null>;
 }
 
-export interface SelectProps extends HTMLProps<HTMLSelectElement> {
+export interface SelectProps extends HTMLProps<HTMLInputElement> {
   field: AnyField;
   label: string;
-  options: string[];
-  selectRef?: MutableRefObject<HTMLSelectElement | null>;
+  options: Array<string>;
+  selectRef?: MutableRefObject<HTMLInputElement | null>;
 }
 
 export const Select: FC<SelectProps> = ({
@@ -69,31 +64,78 @@ export const Select: FC<SelectProps> = ({
   if (!selectProps.className) {
     selectProps.className = '';
   }
-  selectProps.className += `peer ${inputStyle}`;
+
+  selectProps.className += ` ${inputStyle}`;
 
   return (
-    <>
-      <FieldInfo field={field} />
-      <select
-        id={field.name}
-        name={field.name}
-        value={field.state.value}
-        ref={selectRef}
-        onChange={(e) => field.handleChange(e.target.value)}
-        onBlur={field.handleBlur}
+    <ComboBox
+      isInvalid={field.state.meta.errors.length > 0}
+      defaultInputValue={field.state.value}
+      onInputChange={(e) => field.handleChange(e)}
+    >
+      <Label className={labelStyle}>{label}</Label>
+      <div className={css({ position: 'relative' })}>
+        <Input
+          {...selectProps}
+          name={field.name}
+          ref={selectRef}
+          onBlur={field.handleBlur}
+        />
+        <Button
+          className={css({
+            position: 'absolute',
+            top: '50%',
+            right: 2,
+            cursor: 'pointer',
+            transform: 'translateY(-50%)',
+          })}
+        >
+          ▼
+        </Button>
+      </div>
+      <Popover
+        className={css({
+          backgroundColor: 'white',
+          overflowY: 'auto',
+          width: 'var(--trigger-width)',
+          rounded: 'sm',
+          borderWidth: 1,
+          borderColor: 'black',
+        })}
       >
-        {options.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
-      </select>
-      <label className={labelStyle} htmlFor={field.name}>
-        {label}
-      </label>
-    </>
+        <ListBox>
+          {options.map((option) => (
+            <ListBoxItem
+              className={css({
+                '&[data-selected]': {
+                  fontWeight: 'bold',
+                },
+                '&[data-focused]': {
+                  backgroundColor: 'blue.500',
+                  color: 'white',
+                },
+              })}
+              key={option}
+            >
+              {option}
+            </ListBoxItem>
+          ))}
+        </ListBox>
+      </Popover>
+      <div
+        className={css({
+          fontSize: 'xs',
+          color: 'red.500',
+          minHeight: '18px',
+        })}
+      >
+        <FieldError>{field.state.meta.errors.at(0)}</FieldError>
+      </div>
+    </ComboBox>
   );
 };
 
-export const Input: FC<FieldProps> = ({
+const CustomInput: FC<FieldProps> = ({
   field,
   label,
   inputRef,
@@ -102,23 +144,36 @@ export const Input: FC<FieldProps> = ({
   if (!inputProps.className) {
     inputProps.className = '';
   }
-  inputProps.className += `peer ${inputStyle}`;
+
+  inputProps.className += ` ${inputStyle}`;
 
   return (
     <>
-      <FieldInfo field={field} />
-      <input
-        id={field.name}
-        name={field.name}
-        value={field.state.value}
-        onBlur={field.handleBlur}
-        ref={inputRef}
-        onChange={(e) => field.handleChange(e.target.value)}
-        {...inputProps}
-      />
-      <label htmlFor={field.name} className={labelStyle}>
-        {label}
-      </label>
+      <TextField
+        isInvalid={field.state.meta.errors.length > 0}
+        defaultValue={field.state.value}
+      >
+        <Label className={labelStyle}>{label}</Label>
+        <Input
+          name={field.name}
+          ref={inputRef}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(e.currentTarget.value)}
+          {...inputProps}
+        />
+
+        <div
+          className={css({
+            fontSize: 'xs',
+            color: 'red.500',
+            minHeight: '18px',
+          })}
+        >
+          <FieldError>{field.state.meta.errors.at(0)}</FieldError>
+        </div>
+      </TextField>
     </>
   );
 };
+
+export { CustomInput as Input };

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type FC } from 'react';
+import { useEffect, useMemo, useRef, type FC } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 import { valibotValidator } from '@tanstack/valibot-form-adapter';
@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { css } from '../../styled-system/css';
 import { Input, Select } from '../components/Form';
 import * as v from 'valibot';
+import { Button, Form } from 'react-aria-components';
 
 const fieldStyle = css({
   display: 'flex',
@@ -49,13 +50,25 @@ export const HomePage: FC = () => {
     },
   });
 
-  const statesDataListId = useId();
-
   const firstNameInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     firstNameInputRef.current?.focus();
   }, []);
+
+  const StateValidator = useMemo(
+    () =>
+      areStatesLoaded
+        ? v.transform(
+            v.union(
+              states!.map((state) => v.literal(state.name)),
+              'Invalid state',
+            ),
+            (state) => states.find((s) => s.name === state)!.abbreviation,
+          )
+        : undefined,
+    [areStatesLoaded],
+  );
 
   return (
     <section
@@ -91,7 +104,7 @@ export const HomePage: FC = () => {
             Enter the employee's information below.
           </p>
         </header>
-        <form
+        <Form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -104,7 +117,8 @@ export const HomePage: FC = () => {
                 name="firstName"
                 validators={{
                   onChangeAsync: Name,
-                  onChangeAsyncDebounceMs: 1500,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: Name,
                 }}
               >
                 {(field) => (
@@ -114,7 +128,7 @@ export const HomePage: FC = () => {
                     inputRef={firstNameInputRef}
                     autoComplete="given-name"
                     placeholder="John"
-                    required
+                    aria-required
                   />
                 )}
               </form.Field>
@@ -124,8 +138,9 @@ export const HomePage: FC = () => {
               <form.Field
                 name="lastName"
                 validators={{
-                  onChangeAsyncDebounceMs: 1500,
                   onChangeAsync: Name,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: Name,
                 }}
               >
                 {(field) => (
@@ -134,7 +149,7 @@ export const HomePage: FC = () => {
                     label="Last name"
                     autoComplete="family-name"
                     placeholder="Doe"
-                    required
+                    aria-required
                   />
                 )}
               </form.Field>
@@ -166,8 +181,9 @@ export const HomePage: FC = () => {
               <form.Field
                 name="street"
                 validators={{
-                  onChangeAsyncDebounceMs: 1500,
                   onChangeAsync: AddressField,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: AddressField,
                 }}
               >
                 {(field) => (
@@ -177,7 +193,7 @@ export const HomePage: FC = () => {
                       label="Street"
                       placeholder="123 Main Street"
                       autoComplete="street-address"
-                      required
+                      aria-required
                     />
                   </>
                 )}
@@ -189,8 +205,9 @@ export const HomePage: FC = () => {
                 <form.Field
                   name="city"
                   validators={{
-                    onChangeAsyncDebounceMs: 1500,
                     onChangeAsync: AddressField,
+                    onChangeAsyncDebounceMs: 500,
+                    onSubmit: AddressField,
                   }}
                 >
                   {(field) => (
@@ -199,7 +216,7 @@ export const HomePage: FC = () => {
                         field={field}
                         label="City"
                         placeholder="San Fransisco"
-                        required
+                        aria-required
                       />
                     </>
                   )}
@@ -209,41 +226,23 @@ export const HomePage: FC = () => {
                 <form.Field
                   name="state"
                   validators={{
-                    onChangeAsyncDebounceMs: 1500,
-                    onChangeAsync: areStatesLoaded
-                      ? v.union(
-                          states!.map((state) => v.literal(state.abbreviation)),
-                          'Invalid state',
-                        )
-                      : undefined,
+                    onChangeAsync: StateValidator,
+                    onChangeAsyncDebounceMs: 500,
+                    onSubmit: StateValidator,
                   }}
                 >
                   {(field) => (
                     <>
-                      <Input
+                      <Select
                         field={field}
                         label="State"
-                        placeholder="CA"
-                        required
-                        list={areStatesLoaded ? statesDataListId : undefined}
+                        placeholder="California"
+                        aria-required
+                        options={states?.map((state) => state.name) ?? []}
                       />
                     </>
                   )}
                 </form.Field>
-                {areStatesLoaded ? (
-                  <datalist id={statesDataListId}>
-                    {states.map((state) => (
-                      <option
-                        value={state.abbreviation}
-                        key={state.abbreviation}
-                      >
-                        {state.name}
-                      </option>
-                    ))}
-                  </datalist>
-                ) : (
-                  <></>
-                )}
               </div>
             </div>
 
@@ -251,8 +250,9 @@ export const HomePage: FC = () => {
               <form.Field
                 name="zipcode"
                 validators={{
-                  onChangeAsyncDebounceMs: 1500,
                   onChangeAsync: Zipcode,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: Zipcode,
                 }}
               >
                 {(field) => (
@@ -262,7 +262,9 @@ export const HomePage: FC = () => {
                       label="Zip Code"
                       autoComplete="postal-code"
                       placeholder="93190"
-                      required
+                      type="number"
+                      inputMode="numeric"
+                      aria-required
                     />
                   </>
                 )}
@@ -270,13 +272,20 @@ export const HomePage: FC = () => {
             </div>
 
             <div className={fieldStyle}>
-              <form.Field name="department">
+              <form.Field
+                name="department"
+                validators={{
+                  onChangeAsync: AddressField,
+                  onChangeAsyncDebounceMs: 500,
+                  onSubmit: AddressField,
+                }}
+              >
                 {(field) => (
                   <Select
                     field={field}
                     label="Department"
                     options={Departments}
-                    required
+                    aria-required
                   />
                 )}
               </form.Field>
@@ -287,9 +296,10 @@ export const HomePage: FC = () => {
             className={css({
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'flex-end',
             })}
           >
-            <button
+            <Button
               type="submit"
               className={css({
                 whiteSpace: 'nowrap',
@@ -301,7 +311,6 @@ export const HomePage: FC = () => {
                 height: 10,
                 paddingX: 4,
                 paddingY: 2,
-                marginLeft: 'auto',
                 cursor: 'pointer',
                 ringOffset: 1,
                 _active: {
@@ -310,9 +319,9 @@ export const HomePage: FC = () => {
               })}
             >
               Create Employee
-            </button>
+            </Button>
           </div>
-        </form>
+        </Form>
       </article>
     </section>
   );

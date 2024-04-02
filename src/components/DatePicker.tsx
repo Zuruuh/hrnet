@@ -1,26 +1,6 @@
 import { DatePicker, type DatePickerProps } from '@zuruuh/react-date-picker';
-import dayjs from 'dayjs';
 import { type FC } from 'react';
 import { css } from '../../styled-system/css';
-import clsx from 'clsx';
-
-const today = dayjs();
-
-// const dayInViewedMonthButtonStyle = css.raw({
-//   backgroundColor: 'white',
-//   _hover: {
-//     backgroundColor: 'blue.300',
-//   },
-//   color: 'black',
-// });
-
-// const selectedDayButton = css.raw({
-//   backgroundColor: 'blue.500',
-//   color: 'white',
-//   _hover: {
-//     backgroundColor: 'blue.700',
-//   },
-// });
 
 const CustomDatePicker: FC<Omit<DatePickerProps, 'children'>> = (props) => {
   return (
@@ -30,9 +10,8 @@ const CustomDatePicker: FC<Omit<DatePickerProps, 'children'>> = (props) => {
       })}
     >
       <DatePicker.Root {...props}>
-        {({ setTemporarySelectedDate }) => (
+        {() => (
           <>
-            {/* <thead> <tr></tr> </thead> */}
             <tbody
               className={css({
                 gap: 1,

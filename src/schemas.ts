@@ -14,9 +14,11 @@ export const Department = v.union(
 );
 export type Department = v.Output<typeof Department>;
 
-export const Name = v.string([
-  v.minLength(2, 'Value should be at least 2 chars'),
-]);
+export const Name = v.transform(
+  v.string([v.minLength(2, 'Value should be at least 2 chars')]),
+  (name) => name.charAt(0).toUpperCase().concat(name.slice(1)),
+);
+
 export type Name = v.Output<typeof Name>;
 
 export const AddressField = v.string([
