@@ -1,4 +1,4 @@
-import { defineConfig } from '@pandacss/dev';
+import { defineConfig, defineKeyframes } from '@pandacss/dev';
 
 export default defineConfig({
   preflight: true, // css reset
@@ -10,6 +10,20 @@ export default defineConfig({
           inter: { value: 'Inter' },
         },
       },
+      keyframes: defineKeyframes({
+        modalFade: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        modalZoom: {
+          from: {
+            transform: 'scale(0.8)',
+          },
+          to: {
+            transform: 'scale(1)',
+          },
+        },
+      }),
     },
   },
   outdir: 'styled-system',
