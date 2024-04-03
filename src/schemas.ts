@@ -35,6 +35,7 @@ export const BirthDate = Date.refine((date) =>
 export type BirthDate = z.infer<typeof BirthDate>;
 
 export const Employee = z.object({
+  id: z.string().uuid(),
   firstName: Name,
   lastName: Name,
   birthDate: BirthDate,

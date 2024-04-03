@@ -23,6 +23,7 @@
     "react": "^18.2.0",
     "react-aria-components": "^1.1.1",
     "react-dom": "^18.2.0",
+    "remeda": "^1.57.0",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
   },

@@ -59,7 +59,7 @@ export const HomePage: FC = () => {
       startDate: dayjs().format(DAYJS_HTML5_FORMAT),
     },
     onSubmit: ({ value: employee }) => {
-      addEmployee(employee);
+      addEmployee({ id: crypto.randomUUID(), ...employee });
       setShowConfirmationModal(true);
     },
     validatorAdapter: zodValidator,
