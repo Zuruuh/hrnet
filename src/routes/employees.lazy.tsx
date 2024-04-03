@@ -59,7 +59,7 @@ function EmployeePage(): ReactNode {
   });
 
   const navigate = useNavigate({ from: Route.fullPath });
-  // TODO Handle impossible states (page 9999 for example)
+  // TODO: Handle impossible states (page 9999 for example)
   const { query = '', perPage = 10, page = 1 } = Route.useSearch();
 
   const employeesCount = employees.length;
@@ -200,7 +200,11 @@ function EmployeePage(): ReactNode {
                   search: (prev) => ({ ...prev, page: prev?.page + 1 }),
                 })
               }
-              isDisabled={page === Math.floor(employeesCount / perPage)}
+              isDisabled={
+                employeesCount <= perPage
+                  ? true
+                  : page === Math.floor(employeesCount / perPage)
+              }
               className={paginationButtonStyle}
             >
               Next
