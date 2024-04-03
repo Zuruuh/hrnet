@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 import { zodValidator } from '@tanstack/zod-form-adapter';
@@ -12,7 +12,7 @@ import {
 } from '../schemas';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '../../styled-system/css';
-import { Select } from '../components/Form/Select';
+import { ComboBox } from '../components/Form/Select';
 import { Input } from '../components/Form/Input';
 import { DAYJS_HTML5_FORMAT, DateInput } from '../components/Form/DateInput';
 import { z } from 'zod';
@@ -42,7 +42,11 @@ const fieldLineStyle = css({
   },
 });
 
-export const HomePage: FC = () => {
+export const Route = createFileRoute('/')({
+  component: HomePage,
+});
+
+function HomePage(): ReactNode {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const { add: addEmployee } = useEmployeesStore();
 
@@ -294,7 +298,7 @@ export const HomePage: FC = () => {
                   >
                     {(field) => (
                       <>
-                        <Select
+                        <ComboBox
                           field={field}
                           label="State"
                           placeholder="California"
@@ -355,7 +359,7 @@ export const HomePage: FC = () => {
                   }}
                 >
                   {(field) => (
-                    <Select
+                    <ComboBox
                       field={field}
                       label="Department"
                       options={Object.values(Departments.Values)}
@@ -475,6 +479,7 @@ export const HomePage: FC = () => {
                   <Link
                     className={css({ textDecoration: 'underline' })}
                     to="/employees"
+                    search={{ query: '', perPage: 10, page: 1 }}
                   >
                     See
                   </Link>
@@ -497,8 +502,4 @@ export const HomePage: FC = () => {
       </ModalOverlay>
     </>
   );
-};
-
-export const Route = createFileRoute('/')({
-  component: HomePage,
-});
+}

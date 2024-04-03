@@ -15,7 +15,7 @@ import {
   TextField,
 } from 'react-aria-components';
 import { css } from '../../../styled-system/css';
-import { DatePicker, DatePickerProps } from '../DatePicker';
+import { DatePicker, type DatePickerProps } from '../DatePicker';
 import dayjs from 'dayjs';
 
 export interface DateInputProps extends HTMLProps<HTMLInputElement> {

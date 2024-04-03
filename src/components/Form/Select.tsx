@@ -17,6 +17,25 @@ import {
   Popover,
 } from 'react-aria-components';
 
+export const popoverStyle = css({
+  backgroundColor: 'white',
+  overflowY: 'auto',
+  width: 'var(--trigger-width)',
+  rounded: 'sm',
+  borderWidth: 1,
+  borderColor: 'black',
+});
+
+export const listBoxItemStyle = css({
+  '&[data-selected]': {
+    fontWeight: 'bold',
+  },
+  '&[data-focused]': {
+    backgroundColor: 'blue.500',
+    color: 'white',
+  },
+});
+
 export interface SelectProps extends HTMLProps<HTMLInputElement> {
   field: AnyField;
   label: string;
@@ -24,7 +43,7 @@ export interface SelectProps extends HTMLProps<HTMLInputElement> {
   selectRef?: MutableRefObject<HTMLInputElement | null>;
 }
 
-export const Select: FC<SelectProps> = ({
+const CustomComboBox: FC<SelectProps> = ({
   field,
   label,
   options,
@@ -54,30 +73,10 @@ export const Select: FC<SelectProps> = ({
         />
         <Button className={floatingButtonStyle}>{'▼'}</Button>
       </div>
-      <Popover
-        className={css({
-          backgroundColor: 'white',
-          overflowY: 'auto',
-          width: 'var(--trigger-width)',
-          rounded: 'sm',
-          borderWidth: 1,
-          borderColor: 'black',
-        })}
-      >
+      <Popover className={popoverStyle}>
         <ListBox>
           {options.map((option) => (
-            <ListBoxItem
-              className={css({
-                '&[data-selected]': {
-                  fontWeight: 'bold',
-                },
-                '&[data-focused]': {
-                  backgroundColor: 'blue.500',
-                  color: 'white',
-                },
-              })}
-              key={option}
-            >
+            <ListBoxItem className={listBoxItemStyle} key={option}>
               {option}
             </ListBoxItem>
           ))}
@@ -87,3 +86,5 @@ export const Select: FC<SelectProps> = ({
     </ComboBox>
   );
 };
+
+export { CustomComboBox as ComboBox };

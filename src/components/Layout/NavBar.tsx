@@ -33,7 +33,11 @@ export const NavBar: FC = () => {
         <Link to="/" className={css(linkStyle)}>
           Create a new employee
         </Link>
-        <Link to="/employees" className={css(linkStyle)}>
+        <Link
+          to="/employees"
+          className={css(linkStyle)}
+          search={{ query: '', perPage: 10, page: 1 }}
+        >
           Employee list
         </Link>
       </div>

@@ -1,41 +1,98 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { ReactNode, useMemo, useState, type FC } from 'react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { type ReactNode, useMemo, useState, type FC } from 'react';
 import { useEmployeesStore } from '../stores/employees.store';
 import {
   Cell,
-  CellProps,
+  type CellProps,
   Column,
-  ColumnProps,
+  type ColumnProps,
   ColumnResizer,
   Group,
   ResizableTableContainer,
   Row,
-  SortDescriptor,
+  type SortDescriptor,
   Table,
   TableBody,
   TableHeader,
+  Select,
+  Label,
+  Button,
+  SelectValue,
+  Popover,
+  ListBox,
+  ListBoxItem,
+  Input,
+  TextField,
 } from 'react-aria-components';
 import { css } from '../../styled-system/css';
 import * as R from 'remeda';
-import { Employee } from '../schemas';
+import type { Employee } from '../schemas';
+import { z } from 'zod';
+import { listBoxItemStyle, popoverStyle } from '../components/Form/Select';
 
-const EmployeePage: FC = () => {
+const paginationButtonStyle = css({
+  textDecoration: 'underline',
+  padding: 2,
+  rounded: 'sm',
+  cursor: 'pointer',
+  backgroundColor: 'gray.200',
+  _disabled: { cursor: 'not-allowed' },
+});
+
+export const Route = createFileRoute('/employees')({
+  component: EmployeePage,
+  validateSearch: z.object({
+    page: z.number().optional().catch(1),
+    perPage: z
+      .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
+      .optional()
+      .catch(10),
+    query: z.string().optional().catch(''),
+  }),
+});
+
+function EmployeePage(): ReactNode {
   const { employees } = useEmployeesStore();
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'firstName',
     direction: 'ascending',
   });
 
+  const navigate = useNavigate({ from: Route.fullPath });
+  // TODO Handle impossible states (page 9999 for example)
+  const { query = '', perPage = 10, page = 1 } = Route.useSearch();
+
+  const employeesCount = employees.length;
+
+  // very basic search impl but it works I guess
+  // also could be optimized
+  const filteredEmployees = useMemo(
+    () =>
+      query?.trim() === ''
+        ? employees
+        : employees.filter((employee) =>
+            Object.values(employee).some((value) =>
+              value.toString().toLowerCase().includes(query.toLowerCase()),
+            ),
+          ),
+    [employees, query],
+  );
+
   const sortedEmployees = useMemo(() => {
     const sorted = sortDescriptor.column
       ? R.sortBy(
-          employees,
+          filteredEmployees,
           (employee) => employee[sortDescriptor.column as keyof Employee],
         )
-      : employees;
+      : filteredEmployees;
 
     return sortDescriptor.direction === 'ascending' ? sorted : sorted.reverse();
-  }, [sortDescriptor.column, sortDescriptor.direction, employees]);
+  }, [sortDescriptor.column, sortDescriptor.direction, filteredEmployees]);
+
+  const displayedEmployees = useMemo(
+    () => sortedEmployees.slice(perPage * (page - 1), perPage * page),
+    [sortedEmployees, page, perPage],
+  );
 
   return (
     <section
@@ -51,110 +108,212 @@ const EmployeePage: FC = () => {
         className={css({
           fontSize: '2xl',
           fontWeight: 'medium',
-          marginBottom: 2,
         })}
       >
         Current Employees
       </h1>
-      <ResizableTableContainer
+      <div
         className={css({
-          overflow: 'auto',
-          maxHeight: '80vh',
-          scrollPaddingTop: 4,
-          position: 'relative',
-          backgroundColor: 'white',
-          rounded: 'lg',
-          shadow: 'sm',
-          color: 'gray.600',
+          width: 'max-content',
         })}
       >
-        <Table
-          aria-label="Current Employees"
-          sortDescriptor={sortDescriptor}
-          onSortChange={setSortDescriptor}
-          selectionMode="none"
+        <header
+          aria-label="Controls"
           className={css({
-            borderCollapse: 'separate',
-            borderSpacing: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            width: 'full',
+            paddingX: 2,
+            paddingY: 4,
           })}
         >
-          <TableHeader>
-            <CustomColumn id="firstName" allowsSorting isRowHeader>
-              First Name
-            </CustomColumn>
-            <CustomColumn id="lastName" allowsSorting isRowHeader>
-              Last Name
-            </CustomColumn>
-            <CustomColumn id="department" allowsSorting isRowHeader>
-              Department
-            </CustomColumn>
-            <CustomColumn
-              id="birthDate"
-              allowsSorting
-              isRowHeader
-              defaultWidth={160}
+          <Select
+            defaultSelectedKey={perPage.toString()}
+            onSelectionChange={(value) =>
+              navigate({
+                search: (prev) => ({
+                  ...prev,
+                  perPage: Number(value),
+                }),
+              })
+            }
+          >
+            <Label className={css({ marginRight: 2 })}>Shown entries</Label>
+            <Button className={css({ cursor: 'pointer' })}>
+              <SelectValue />
+              <span aria-hidden="true">▼</span>
+            </Button>
+            <Popover className={popoverStyle}>
+              <ListBox>
+                {[10, 25, 50, 100].map((value) => (
+                  <ListBoxItem
+                    id={value.toString()}
+                    textValue={value.toString()}
+                    key={value.toString()}
+                    className={listBoxItemStyle}
+                  >
+                    {value}
+                  </ListBoxItem>
+                ))}
+              </ListBox>
+            </Popover>
+          </Select>
+          <TextField
+            className={css({
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              textAlign: 'center',
+            })}
+            defaultValue={query}
+          >
+            <Label>Search</Label>
+            <Input
+              onChange={(e) =>
+                navigate({
+                  search: (prev) => ({ ...prev, query: e.target.value }),
+                })
+              }
+            />
+          </TextField>
+          <Group
+            className={css({ display: 'flex', alignItems: 'center', gap: 1 })}
+          >
+            <Button
+              onPress={() =>
+                navigate({
+                  // @ts-expect-error `prev` type should be inferred here but it's not ?
+                  search: (prev) => ({ ...prev, page: prev?.page - 1 }),
+                })
+              }
+              isDisabled={page === 1}
+              className={paginationButtonStyle}
             >
-              Date of birth
-            </CustomColumn>
-            <CustomColumn
-              id="street"
-              allowsSorting
-              isRowHeader
-              defaultWidth={110}
+              Previous
+            </Button>
+            <span className={css({ paddingX: 1 })}>{page}</span>
+            <Button
+              onPress={() =>
+                navigate({
+                  // @ts-expect-error `prev` type should be inferred here but it's not ?
+                  search: (prev) => ({ ...prev, page: prev?.page + 1 }),
+                })
+              }
+              isDisabled={page === Math.floor(employeesCount / perPage)}
+              className={paginationButtonStyle}
             >
-              Street
-            </CustomColumn>
-            <CustomColumn id="city" allowsSorting isRowHeader defaultWidth={90}>
-              City
-            </CustomColumn>
-            <CustomColumn
-              id="state"
-              allowsSorting
-              isRowHeader
-              defaultWidth={110}
-            >
-              State
-            </CustomColumn>
-            <CustomColumn
-              id="zipcode"
-              allowsSorting
-              isRowHeader
-              defaultWidth={120}
-            >
-              Zipcode
-            </CustomColumn>
-          </TableHeader>
-          <TableBody items={sortedEmployees}>
-            {(employee) => (
-              <Row
-                className={css({
-                  cursor: 'default',
-                  outline: 'none',
-                  _focusVisible: {
-                    outlineWidth: 2,
-                    outlineColor: 'slate.600',
-                    outlineOffset: -4,
-                  },
-                  _even: { backgroundColor: 'slate.100' },
-                })}
-                key={employee.id}
+              Next
+            </Button>
+          </Group>
+        </header>
+        <ResizableTableContainer
+          className={css({
+            overflow: 'auto',
+            maxHeight: '80vh',
+            scrollPaddingTop: 4,
+            position: 'relative',
+            backgroundColor: 'white',
+            rounded: 'lg',
+            shadow: 'sm',
+            color: 'gray.600',
+          })}
+        >
+          <Table
+            aria-label="Current Employees"
+            sortDescriptor={sortDescriptor}
+            onSortChange={setSortDescriptor}
+            selectionMode="none"
+            className={css({
+              borderCollapse: 'separate',
+              borderSpacing: 0,
+            })}
+          >
+            <TableHeader>
+              <CustomColumn id="firstName" allowsSorting isRowHeader>
+                First Name
+              </CustomColumn>
+              <CustomColumn id="lastName" allowsSorting isRowHeader>
+                Last Name
+              </CustomColumn>
+              <CustomColumn id="department" allowsSorting isRowHeader>
+                Department
+              </CustomColumn>
+              <CustomColumn
+                id="birthDate"
+                allowsSorting
+                isRowHeader
+                defaultWidth={160}
               >
-                <CustomCell key="firstName">{employee.firstName}</CustomCell>
-                <CustomCell key="lastName">{employee.lastName}</CustomCell>
-                <CustomCell key="department">{employee.department}</CustomCell>
-                <CustomCell key="birthDate">{employee.birthDate}</CustomCell>
-                <CustomCell key="street">{employee.street}</CustomCell>
-                <CustomCell key="city">{employee.city}</CustomCell>
-                <CustomCell key="state">{employee.state}</CustomCell>
-                <CustomCell key="zipcode">{employee.zipcode}</CustomCell>
-              </Row>
-            )}
-          </TableBody>
-        </Table>
-      </ResizableTableContainer>
+                Date of birth
+              </CustomColumn>
+              <CustomColumn
+                id="street"
+                allowsSorting
+                isRowHeader
+                defaultWidth={110}
+              >
+                Street
+              </CustomColumn>
+              <CustomColumn
+                id="city"
+                allowsSorting
+                isRowHeader
+                defaultWidth={90}
+              >
+                City
+              </CustomColumn>
+              <CustomColumn
+                id="state"
+                allowsSorting
+                isRowHeader
+                defaultWidth={110}
+              >
+                State
+              </CustomColumn>
+              <CustomColumn
+                id="zipcode"
+                allowsSorting
+                isRowHeader
+                defaultWidth={120}
+              >
+                Zipcode
+              </CustomColumn>
+            </TableHeader>
+            <TableBody items={displayedEmployees}>
+              {(employee) => (
+                <Row
+                  className={css({
+                    cursor: 'default',
+                    outline: 'none',
+                    _focusVisible: {
+                      outlineWidth: 2,
+                      outlineColor: 'slate.600',
+                      outlineOffset: 4,
+                    },
+                    _even: { backgroundColor: 'slate.100' },
+                  })}
+                  key={employee.id}
+                >
+                  <CustomCell key="firstName">{employee.firstName}</CustomCell>
+                  <CustomCell key="lastName">{employee.lastName}</CustomCell>
+                  <CustomCell key="department">
+                    {employee.department}
+                  </CustomCell>
+                  <CustomCell key="birthDate">{employee.birthDate}</CustomCell>
+                  <CustomCell key="street">{employee.street}</CustomCell>
+                  <CustomCell key="city">{employee.city}</CustomCell>
+                  <CustomCell key="state">{employee.state}</CustomCell>
+                  <CustomCell key="zipcode">{employee.zipcode}</CustomCell>
+                </Row>
+              )}
+            </TableBody>
+          </Table>
+        </ResizableTableContainer>
+      </div>
     </section>
   );
-};
+}
 
 const CustomCell: FC<CellProps> = (props) => (
   <Cell
@@ -168,7 +327,6 @@ const CustomCell: FC<CellProps> = (props) => (
       _focusVisible: {
         outlineWidth: 2,
         outlineColor: 'slate.600',
-        outlineOffset: -4,
       },
     })}
     {...props}
@@ -213,7 +371,6 @@ const CustomColumn: FC<ColumnProps & { children: ReactNode }> = ({
       >
         <Group
           role="presentation"
-          tabIndex={-1}
           className={css({
             display: 'flex',
             flex: '1 1 0%',
@@ -225,6 +382,7 @@ const CustomColumn: FC<ColumnProps & { children: ReactNode }> = ({
           })}
         >
           <span
+            role="button"
             className={css({
               flex: '1 1 0%',
               overflow: 'hidden',
@@ -289,7 +447,3 @@ const CustomColumn: FC<ColumnProps & { children: ReactNode }> = ({
     )}
   </Column>
 );
-
-export const Route = createFileRoute('/employees')({
-  component: EmployeePage,
-});

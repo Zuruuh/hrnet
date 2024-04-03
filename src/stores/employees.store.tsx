@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Employee } from '../schemas';
+import type { Employee } from '../schemas';
 
 export interface EmployeesState {
   employees: Array<Employee>;
