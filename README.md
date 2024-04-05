@@ -2,13 +2,25 @@
 
 ## Requirements
 
-- [Bun](https://bun.sh) v^1.0.35
+You will need either [bun](https://bun.sh) v^1.1 or [node](https://nodejs.org) v^18
 
 ## Setup
 
 ```
 git clone git@github.com:Zuruuh/hrnet.git
 cd hrnet
-bun i
-bun dev
+```
+
+### Start dev server with Bun
+
+```
+bun install
+bun run dev
+```
+
+### Start dev server with node
+
+```
+npm install
+npm run dev
 ```

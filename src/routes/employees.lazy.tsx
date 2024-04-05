@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { type ReactNode, useMemo, useState, type FC } from 'react';
 import { useEmployeesStore } from '../stores/employees.store';
 import {
@@ -26,9 +26,12 @@ import {
 } from 'react-aria-components';
 import { css } from '../../styled-system/css';
 import * as R from 'remeda';
-import type { Employee } from '../schemas';
+import { Departments, type Employee } from '../schemas';
 import { z } from 'zod';
 import { listBoxItemStyle, popoverStyle } from '../components/Form/Select';
+import * as faker from '@ngneat/falso';
+import dayjs from 'dayjs';
+import { DAYJS_HTML5_FORMAT } from '../components/Form/DateInput';
 
 const paginationButtonStyle = css({
   textDecoration: 'underline',
@@ -36,13 +39,13 @@ const paginationButtonStyle = css({
   rounded: 'sm',
   cursor: 'pointer',
   backgroundColor: 'gray.200',
-  _disabled: { cursor: 'not-allowed' },
+  _disabled: { color: 'gray.500', cursor: 'not-allowed' },
 });
 
 export const Route = createFileRoute('/employees')({
   component: EmployeePage,
   validateSearch: z.object({
-    page: z.number().optional().catch(1),
+    page: z.number().positive().int().optional().catch(1),
     perPage: z
       .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
       .optional()
@@ -52,17 +55,14 @@ export const Route = createFileRoute('/employees')({
 });
 
 function EmployeePage(): ReactNode {
-  const { employees } = useEmployeesStore();
+  const { employees, add: addEmployee } = useEmployeesStore();
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'firstName',
     direction: 'ascending',
   });
 
-  const navigate = useNavigate({ from: Route.fullPath });
-  // TODO: Handle impossible states (page 9999 for example)
+  const navigate = Route.useNavigate();
   const { query = '', perPage = 10, page = 1 } = Route.useSearch();
-
-  const employeesCount = employees.length;
 
   // very basic search impl but it works I guess
   // also could be optimized
@@ -77,6 +77,8 @@ function EmployeePage(): ReactNode {
           ),
     [employees, query],
   );
+
+  const employeesCount = filteredEmployees.length;
 
   const sortedEmployees = useMemo(() => {
     const sorted = sortDescriptor.column
@@ -115,6 +117,9 @@ function EmployeePage(): ReactNode {
       <div
         className={css({
           width: 'max-content',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
         })}
       >
         <header
@@ -130,19 +135,22 @@ function EmployeePage(): ReactNode {
         >
           <Select
             defaultSelectedKey={perPage.toString()}
-            onSelectionChange={(value) =>
+            onSelectionChange={(newPerPage) =>
               navigate({
-                search: (prev) => ({
-                  ...prev,
-                  perPage: Number(value),
-                }),
+                search: {
+                  query,
+                  page: Math.floor(
+                    (perPage * page - perPage) / Number(newPerPage),
+                  ),
+                  perPage: Number(newPerPage),
+                },
               })
             }
           >
-            <Label className={css({ marginRight: 2 })}>Shown entries</Label>
+            <Label className={css({ marginRight: 2 })}>Shown entries:</Label>
             <Button className={css({ cursor: 'pointer' })}>
               <SelectValue />
-              <span aria-hidden="true">▼</span>
+              <span aria-hidden="true">{'▼'}</span>
             </Button>
             <Popover className={popoverStyle}>
               <ListBox>
@@ -172,7 +180,11 @@ function EmployeePage(): ReactNode {
             <Input
               onChange={(e) =>
                 navigate({
-                  search: (prev) => ({ ...prev, query: e.target.value }),
+                  search: {
+                    perPage,
+                    page: 1,
+                    query: e.target.value,
+                  },
                 })
               }
             />
@@ -183,8 +195,11 @@ function EmployeePage(): ReactNode {
             <Button
               onPress={() =>
                 navigate({
-                  // @ts-expect-error `prev` type should be inferred here but it's not ?
-                  search: (prev) => ({ ...prev, page: prev?.page - 1 }),
+                  search: {
+                    perPage,
+                    query,
+                    page: page - 1,
+                  },
                 })
               }
               isDisabled={page === 1}
@@ -196,14 +211,17 @@ function EmployeePage(): ReactNode {
             <Button
               onPress={() =>
                 navigate({
-                  // @ts-expect-error `prev` type should be inferred here but it's not ?
-                  search: (prev) => ({ ...prev, page: prev?.page + 1 }),
+                  search: {
+                    perPage,
+                    query,
+                    page: page + 1,
+                  },
                 })
               }
               isDisabled={
                 employeesCount <= perPage
                   ? true
-                  : page === Math.floor(employeesCount / perPage)
+                  : page === Math.ceil(employeesCount / perPage)
               }
               className={paginationButtonStyle}
             >
@@ -214,7 +232,6 @@ function EmployeePage(): ReactNode {
         <ResizableTableContainer
           className={css({
             overflow: 'auto',
-            maxHeight: '80vh',
             scrollPaddingTop: 4,
             position: 'relative',
             backgroundColor: 'white',
@@ -234,11 +251,29 @@ function EmployeePage(): ReactNode {
             })}
           >
             <TableHeader>
-              <CustomColumn id="firstName" allowsSorting isRowHeader>
+              <CustomColumn
+                id="firstName"
+                allowsSorting
+                isRowHeader
+                defaultWidth={140}
+              >
                 First Name
               </CustomColumn>
-              <CustomColumn id="lastName" allowsSorting isRowHeader>
+              <CustomColumn
+                id="lastName"
+                allowsSorting
+                isRowHeader
+                defaultWidth={140}
+              >
                 Last Name
+              </CustomColumn>
+              <CustomColumn
+                id="startDate"
+                allowsSorting
+                isRowHeader
+                defaultWidth={140}
+              >
+                Start date
               </CustomColumn>
               <CustomColumn id="department" allowsSorting isRowHeader>
                 Department
@@ -301,6 +336,7 @@ function EmployeePage(): ReactNode {
                 >
                   <CustomCell key="firstName">{employee.firstName}</CustomCell>
                   <CustomCell key="lastName">{employee.lastName}</CustomCell>
+                  <CustomCell key="startDate">{employee.startDate}</CustomCell>
                   <CustomCell key="department">
                     {employee.department}
                   </CustomCell>
@@ -314,6 +350,39 @@ function EmployeePage(): ReactNode {
             </TableBody>
           </Table>
         </ResizableTableContainer>
+        <Button
+          className={css({
+            backgroundColor: 'black',
+            color: 'white',
+            padding: 2,
+            marginTop: 3,
+            width: 'fit-content',
+            marginX: 'auto',
+            rounded: 'sm',
+            cursor: 'pointer',
+            ringColor: 'slate.500',
+            fontSize: 'lg',
+          })}
+          onPress={() =>
+            addEmployee({
+              id: faker.randUuid(),
+              firstName: faker.randFirstName(),
+              lastName: faker.randLastName(),
+              city: faker.randCity(),
+              state: faker.randState(),
+              street: faker.randStreetName(),
+              zipcode: faker.randZipCode(),
+              birthDate: dayjs(faker.randPastDate()).format(DAYJS_HTML5_FORMAT),
+              startDate: dayjs(faker.randRecentDate()).format(
+                DAYJS_HTML5_FORMAT,
+              ),
+              department: faker.rand(Object.values(Departments.Values)),
+            })
+          }
+        >
+          {/*!isMockGeneratorLoaded ? 'Loading...' : 'Create mock employee'*/}
+          Create mock employee
+        </Button>
       </div>
     </section>
   );
