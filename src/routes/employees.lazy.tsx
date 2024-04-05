@@ -380,7 +380,6 @@ function EmployeePage(): ReactNode {
             })
           }
         >
-          {/*!isMockGeneratorLoaded ? 'Loading...' : 'Create mock employee'*/}
           Create mock employee
         </Button>
       </div>

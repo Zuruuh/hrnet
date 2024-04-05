@@ -2,7 +2,7 @@
 
 ## Requirements
 
-You will need either [bun](https://bun.sh) v^1.1 or [node](https://nodejs.org) v^18
+You will need either [bun](https://bun.sh) v^1.1 or [node](https://nodejs.org) v^20.12
 
 ## Setup
 
